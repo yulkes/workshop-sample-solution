@@ -28,11 +28,9 @@ class DirectoryListing:
         :return:
         """
         return {
-            {
-                "filename": str(self.base_path),
-                "dirs": [str(directory) for directory in self.dirs],
-                "files": [str(f) for f in self.files],
-            }
+            "filename": str(self.base_path),
+            "dirs": [str(directory) for directory in self.dirs],
+            "files": [str(f) for f in self.files],
         }
 
 
