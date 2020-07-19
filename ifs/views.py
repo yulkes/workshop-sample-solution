@@ -1,9 +1,19 @@
-from flask import render_template
+from flask import render_template, Blueprint, current_app
 
-from ifs import app
+fs = Blueprint("fs", "fs")
 
 
-@app.route('/')
-def index():
-    app.logger.warning('sample message')
-    return render_template('index.html')
+@fs.route("/")
+def get_listing():
+    current_app.logger.warning("sample message")
+    return render_template("index.html")
+
+
+@fs.route("/")
+def delete_file():
+    pass
+
+
+@fs.route("/")
+def rename_file():
+    pass
