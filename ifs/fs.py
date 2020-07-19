@@ -58,7 +58,7 @@ class RealFileSystemService(AbstractFileSystemService):
             )
 
     def rename_file(self, request: RenameFileRequest) -> bool:
-        pass
+        return False
 
     def delete_file(self, request: DeleteFileRequest) -> bool:
-        pass
+        return False
