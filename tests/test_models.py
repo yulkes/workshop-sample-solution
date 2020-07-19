@@ -1,7 +1,7 @@
 import tempfile
 from pathlib import Path
 
-from models import DirectoryListing
+from ifs.models import DirectoryListing
 
 
 def test_directory_listing_should_detect_files():

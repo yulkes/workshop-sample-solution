@@ -26,14 +26,14 @@ class AbstractFileSystemService(abc.ABC):
 
 class RealFileSystemService(AbstractFileSystemService):
     def __init__(self, root_path: Path):
-        self.root_path = root_path.absolute()
+        self.root_path = root_path.resolve()
 
     def get_dir_list(self, request: DirListingRequest) -> DirectoryListing:
         dir_list_path = request.base_path
-        self.validate_safe_path(dir_list_path)
+        full_path = self.validate_safe_path(dir_list_path)
 
         result = DirectoryListing(dir_list_path)
-        for file in dir_list_path.iterdir():
+        for file in full_path.iterdir():
             result.add_file(file)
         return result
 
@@ -42,7 +42,7 @@ class RealFileSystemService(AbstractFileSystemService):
             raise ValueError(
                 f"Security Error, absolute paths are not allowed: {path}", path
             )
-        full_path = self.root_path / path
+        full_path = (self.root_path / path).resolve()
         # Try to catch tricks to go outside the scope of the given root path (Like using ".." for dir traversal)
         if full_path > self.root_path:
             raise ValueError(
@@ -56,6 +56,7 @@ class RealFileSystemService(AbstractFileSystemService):
             raise ValueError(
                 f"Given path is not a directory: {full_path.name}", full_path.name
             )
+        return full_path
 
     def rename_file(self, request: RenameFileRequest) -> bool:
         return False

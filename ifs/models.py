@@ -29,9 +29,12 @@ class DirectoryListing:
         """
         return {
             "filename": str(self.base_path),
-            "dirs": [str(directory) for directory in self.dirs],
-            "files": [str(f) for f in self.files],
+            "dirs": [str(directory.name) for directory in self.dirs],
+            "files": [str(f.name) for f in self.files],
         }
+
+    def __bool__(self):
+        return bool(self.files or self.dirs)
 
 
 @dataclass

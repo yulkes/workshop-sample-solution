@@ -1,5 +1,3 @@
-import json
-
 import pytest
 
 from ifs import app_init
