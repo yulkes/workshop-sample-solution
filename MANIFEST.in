@@ -1,0 +1,2 @@
+recursive-include ifs/templates *
+recursive-include ifs/static *
