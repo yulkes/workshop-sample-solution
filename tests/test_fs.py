@@ -1,17 +1,27 @@
+import os
 import tempfile
 from pathlib import Path
+import time
 
 import pytest
 
 from ifs.fs import RealFileSystemService
 from ifs.models import DirListingRequest
-from models import DeleteFileRequest
+from models import DeleteFileRequest, RenameFileRequest
 
 
 @pytest.fixture()
 def temporary_dir():
     with tempfile.TemporaryDirectory() as td:
         yield td
+
+
+@pytest.fixture()
+def nonexisting_file() -> Path:
+    f = Path(f"nonexistingfile{time.time_ns()}")
+    yield f
+    if f.exists():
+        os.remove(f)
 
 
 @pytest.fixture()
@@ -51,8 +61,31 @@ def test_real_fs_delete_existing_file_should_succeed(temporary_dir, filesystem):
         assert not Path(testfile.name).exists()
 
 
-def test_real_fs_delete_nonexisting_file_should_fail(filesystem):
+def test_real_fs_delete_nonexisting_file_should_fail(filesystem, nonexisting_file):
     with pytest.raises(ValueError):
-        nonexisting_file = Path("thisfiledoesnotexist")
         assert not nonexisting_file.exists()
         filesystem.delete_file(DeleteFileRequest(nonexisting_file))
+
+
+def test_real_fs_rename_nonexisting_file_should_fail(filesystem, nonexisting_file):
+    with pytest.raises(ValueError):
+        target = Path("anything")
+        assert not target.exists()
+        filesystem.rename_file(RenameFileRequest(nonexisting_file, target))
+
+
+def test_real_fs_rename_existing_target_file_should_fail(
+    filesystem, temporary_dir, nonexisting_file
+):
+    with tempfile.NamedTemporaryFile(dir=temporary_dir, delete=False) as target_file:
+        simplified_path = Path(target_file.name).relative_to(temporary_dir)
+        with pytest.raises(ValueError):
+            filesystem.rename_file(RenameFileRequest(nonexisting_file, simplified_path))
+
+
+def test_real_fs_rename_valid_should_succeed(filesystem, temporary_dir):
+    with tempfile.NamedTemporaryFile(dir=temporary_dir, delete=False) as source_file:
+        simplified_source = Path(source_file.name).relative_to(temporary_dir)
+        target_file = Path("thisfiledoesnotexist")
+        filesystem.rename_file(RenameFileRequest(simplified_source, target_file))
+        assert (temporary_dir / target_file).exists()

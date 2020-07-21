@@ -31,13 +31,15 @@ class RealFileSystemService(AbstractFileSystemService):
 
     def get_dir_list(self, request: DirListingRequest) -> DirectoryListing:
         dir_list_path = request.base_path
-        full_path = self._validate_safe_path(dir_list_path)
+        full_path = self._validate_safe_path(
+            dir_list_path, force_dir=True, should_exist=True
+        )
         result = DirectoryListing(dir_list_path)
         for file in full_path.iterdir():
             result.add_file(file)
         return result
 
-    def _validate_safe_path(self, path, force_directory=True):
+    def _validate_safe_path(self, path, force_dir=False, should_exist=True):
         if path.is_absolute():
             raise ValueError(
                 f"Security Error, absolute paths are not allowed: {path}", path
@@ -48,17 +50,26 @@ class RealFileSystemService(AbstractFileSystemService):
             raise ValueError(
                 f"Security Error, file path is outside allowed root: {path}", path
             )
-        if not full_path.exists():
+        # Check existence:
+        if should_exist and not full_path.exists():
             raise ValueError(f"Given path does not exist: {path}", path)
-        if force_directory and not full_path.is_dir():
+        elif not should_exist and full_path.exists():
+            raise ValueError(f"Given path exists: {path}", path)
+
+        if force_dir and not full_path.is_dir():
             raise ValueError(f"Given path is not a directory: {path}", path)
         return full_path
 
     def rename_file(self, request: RenameFileRequest):
-        return False
+        source_path = self._validate_safe_path(request.old_path, should_exist=True)
+        target_path = self._validate_safe_path(request.new_path, should_exist=False)
+        try:
+            os.renames(source_path, target_path)
+        except OSError as oe:
+            raise ValueError("Failed moving file",)
 
     def delete_file(self, request: DeleteFileRequest):
-        full_path = self._validate_safe_path(request.file_path, force_directory=False)
+        full_path = self._validate_safe_path(request.file_path)
         if full_path.is_dir():
             try:
                 full_path.rmdir()
