@@ -2,7 +2,7 @@ import os
 
 from flask import Flask
 
-from ifs.views import fs_blueprint
+from filesystem.views import fs_blueprint
 
 
 def initialize_app(config_object_path=None, config_envvars=None):
