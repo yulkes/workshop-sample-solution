@@ -1,4 +1,6 @@
 import os
+import logging
+from logging.handlers import TimedRotatingFileHandler
 
 from flask import Flask
 
@@ -13,8 +15,6 @@ def initialize_app(config_object_path=None, config_envvars=None):
         app.config.from_envvar(config_envvars)
     app.register_blueprint(fs_blueprint, url_prefix="/fs")
     if not app.debug:
-        import logging
-        from logging.handlers import TimedRotatingFileHandler
 
         file_handler = TimedRotatingFileHandler(
             os.path.join(app.config["LOG_DIR"], "ifs.log"), "midnight"
