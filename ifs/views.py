@@ -1,17 +1,17 @@
 from pathlib import Path
 
+import flask
 from flask import Blueprint, current_app, jsonify, request
 
 from ifs.fs import RealFileSystemService
-from ifs.models import DirListingRequest
-from models import DeleteFileRequest, RenameFileRequest
+from ifs.models import DirListingRequest, DeleteFileRequest, RenameFileRequest
 
-fs = Blueprint("fs", "fs")
+fs_blueprint = Blueprint("fs", "fs")
 
 
-@fs.record
-def set_app_fs_service():
-    base_path_str = current_app.config.get("BASE_PATH", "")
+@fs_blueprint.record
+def set_app_fs_service(setup_state: flask.blueprints.BlueprintSetupState):
+    base_path_str = setup_state.app.config.get("BASE_PATH", "")
     if not base_path_str:
         raise ValueError(
             "Initialized without BASE_PATH variable for the FileSystem module"
@@ -21,11 +21,11 @@ def set_app_fs_service():
         raise ValueError(
             f"BASE_PATH [{base_path_str}] should reflect an existing directory"
         )
-    current_app.fs_service = RealFileSystemService(base_path)
+    setup_state.app.fs_service = RealFileSystemService(base_path)
 
 
-@fs.route("/", methods=["GET"])
-@fs.route("/<path:listing_path>", methods=["GET"])
+@fs_blueprint.route("/", methods=["GET"])
+@fs_blueprint.route("/<path:listing_path>", methods=["GET"])
 def get_listing(listing_path=Path(".")):
     """
     Read the path parameter, make sure it's valid
@@ -49,7 +49,7 @@ def get_listing(listing_path=Path(".")):
     return jsonify({"success": True, "fs": result.to_dict()})
 
 
-@fs.route("/<path:path>", methods=["DELETE"])
+@fs_blueprint.route("/<path:path>", methods=["DELETE"])
 def delete_file(path):
     current_app.logger.info("This is the path received: [%s]", path)
     try:
@@ -60,7 +60,7 @@ def delete_file(path):
         return jsonify(success=False, error=e.args[0])
 
 
-@fs.route("/<path:path>", methods=["PUT"])
+@fs_blueprint.route("/<path:path>", methods=["PUT"])
 def rename_file(path):
     current_app.logger.info("This is the path received: [%s]", path)
     try:

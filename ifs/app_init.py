@@ -2,7 +2,7 @@ import os
 
 from flask import Flask
 
-from ifs.views import fs
+from ifs.views import fs_blueprint
 
 
 def initialize_app(config_object_path=None, config_envvars=None):
@@ -11,7 +11,7 @@ def initialize_app(config_object_path=None, config_envvars=None):
         app.config.from_object(config_object_path)
     if config_envvars:
         app.config.from_envvar(config_envvars)
-    app.register_blueprint(fs, url_prefix="/fs")
+    app.register_blueprint(fs_blueprint, url_prefix="/fs")
     if not app.debug:
         import logging
         from logging.handlers import TimedRotatingFileHandler
