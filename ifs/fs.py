@@ -11,17 +11,21 @@ from ifs.models import (
 )
 
 
+class FileSystemException(Exception):
+    pass
+
+
 class AbstractFileSystemService(abc.ABC):
     @abstractmethod
     def get_dir_list(self, request: DirListingRequest) -> DirectoryListing:
         pass
 
     @abstractmethod
-    def rename_file(self, request: RenameFileRequest) -> bool:
+    def rename_file(self, request: RenameFileRequest):
         pass
 
     @abstractmethod
-    def delete_file(self, request: DeleteFileRequest) -> bool:
+    def delete_file(self, request: DeleteFileRequest):
         pass
 
 
@@ -41,23 +45,23 @@ class RealFileSystemService(AbstractFileSystemService):
 
     def _validate_safe_path(self, path, force_dir=False, should_exist=True):
         if path.is_absolute():
-            raise ValueError(
+            raise FileSystemException(
                 f"Security Error, absolute paths are not allowed: {path}", path
             )
         full_path = (self.root_path / path).resolve()
         # Try to catch tricks to go outside the scope of the given root path (Like using ".." for dir traversal)
         if self.root_path not in full_path.parents and self.root_path != full_path:
-            raise ValueError(
+            raise FileSystemException(
                 f"Security Error, file path is outside allowed root: {path}", path
             )
         # Check existence:
         if should_exist and not full_path.exists():
-            raise ValueError(f"Given path does not exist: {path}", path)
+            raise FileSystemException(f"Given path does not exist: {path}", path)
         elif not should_exist and full_path.exists():
-            raise ValueError(f"Given path exists: {path}", path)
+            raise FileSystemException(f"Given path exists: {path}", path)
 
         if force_dir and not full_path.is_dir():
-            raise ValueError(f"Given path is not a directory: {path}", path)
+            raise FileSystemException(f"Given path is not a directory: {path}", path)
         return full_path
 
     def rename_file(self, request: RenameFileRequest):
@@ -66,21 +70,21 @@ class RealFileSystemService(AbstractFileSystemService):
         try:
             os.renames(source_path, target_path)
         except OSError as oe:
-            raise ValueError("Failed moving file",)
+            raise FileSystemException("Failed moving file",)
 
     def delete_file(self, request: DeleteFileRequest):
         full_path = self._validate_safe_path(request.file_path)
-        if full_path.is_dir():
-            try:
+        try:
+            if full_path.is_dir():
                 full_path.rmdir()
-            except OSError as oe:
-                raise ValueError(
-                    f"Failed deleting directory: {request.file_path}"
-                ) from oe
-        elif full_path.is_file():
-            os.remove(full_path)
-        else:
-            raise ValueError(
-                f"Cannot delete this type of file: {request.file_path}",
-                request.file_path,
-            )
+            elif full_path.is_file():
+                os.remove(full_path)
+            else:
+                raise FileSystemException(
+                    f"Cannot delete this type of file: {request.file_path}",
+                    request.file_path,
+                )
+        except OSError as oe:
+            raise FileSystemException(
+                f"Failed deleting path: {request.file_path}"
+            ) from oe

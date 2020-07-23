@@ -2,7 +2,7 @@ import os
 
 from flask import Flask
 
-from filesystem.views import fs_blueprint
+from ifs.filesystem.views import fs_blueprint
 
 
 def initialize_app(config_object_path=None, config_envvars=None):
@@ -16,7 +16,6 @@ def initialize_app(config_object_path=None, config_envvars=None):
         import logging
         from logging.handlers import TimedRotatingFileHandler
 
-        # https://docs.python.org/3.6/library/logging.handlers.html#timedrotatingfilehandler
         file_handler = TimedRotatingFileHandler(
             os.path.join(app.config["LOG_DIR"], "ifs.log"), "midnight"
         )

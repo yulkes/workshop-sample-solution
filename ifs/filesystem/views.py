@@ -3,7 +3,7 @@ from pathlib import Path
 import flask
 from flask import Blueprint, current_app, jsonify, request
 
-from ifs.fs import RealFileSystemService
+from ifs.fs import RealFileSystemService, FileSystemException
 from ifs.models import DirListingRequest, DeleteFileRequest, RenameFileRequest
 
 fs_blueprint = Blueprint("fs", "fs")
@@ -44,7 +44,7 @@ def get_listing(listing_path=Path(".")):
     try:
         dir_list_request = DirListingRequest(Path(listing_path))
         result = current_app.fs_service.get_dir_list(dir_list_request)
-    except ValueError as e:
+    except FileSystemException as e:
         return jsonify({"success": False, "error": e.args[0]})
     return jsonify({"success": True, "fs": result.to_dict()})
 
@@ -56,7 +56,7 @@ def delete_file(path):
         delete_request = DeleteFileRequest(Path(path))
         current_app.fs_service.delete_file(delete_request)
         return jsonify(success=True)
-    except ValueError as e:
+    except FileSystemException as e:
         return jsonify(success=False, error=e.args[0])
 
 
@@ -68,5 +68,5 @@ def rename_file(path):
         rename_request = RenameFileRequest(Path(path), Path(new_path))
         current_app.fs_service.rename_file(rename_request)
         return jsonify(success=True)
-    except ValueError as e:
+    except FileSystemException as e:
         return jsonify(success=False, error=e.args[0])
