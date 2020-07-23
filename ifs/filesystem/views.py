@@ -3,8 +3,8 @@ from pathlib import Path
 import flask
 from flask import Blueprint, current_app, jsonify, request
 
-from ifs.fs import RealFileSystemService, FileSystemException
-from ifs.models import DirListingRequest, DeleteFileRequest, RenameFileRequest
+from .fs import RealFileSystemService, FileSystemException
+from .models import DirListingRequest, DeleteFileRequest, RenameFileRequest
 
 fs_blueprint = Blueprint("fs", "fs")
 

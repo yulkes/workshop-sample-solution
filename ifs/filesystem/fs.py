@@ -3,7 +3,7 @@ import os
 from abc import abstractmethod
 from pathlib import Path
 
-from ifs.models import (
+from .models import (
     DirectoryListing,
     DirListingRequest,
     RenameFileRequest,
