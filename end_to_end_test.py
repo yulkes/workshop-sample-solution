@@ -11,7 +11,7 @@ SERVICE_BASE_PATH = "http://localhost:5000/fs/"
 
 def end_to_end_test():
 
-    logging.debug("Testin: Initial dir list")
+    logging.debug("Testing: Initial dir list")
     dir_list_response = requests.get(SERVICE_BASE_PATH)
     assert dir_list_response.ok
     dir_list = dir_list_response.json()
