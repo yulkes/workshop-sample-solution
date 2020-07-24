@@ -11,23 +11,6 @@ clean:
 run: .venv
 	FLASK_ENV=development FLASK_APP=webapp IFS_SETTINGS=../settings.cfg .venv/bin/flask run
 
-.PHONY: test
-test: .venv
-	IFS_SETTINGS=../settings.cfg .venv/bin/python -m pytest -s "tests"
-
-.PHONY: clean
-sdist: .venv test
-	.venv/bin/python setup.py sdist
-
-PYTHON_FILES = $(shell find ifs tests -name '*.py')
-PROJECT_FILES = README.md MANIFEST.in settings.cfg requirements.txt webapp.py Makefile
-dist/home_assignment.zip: .venv test
-	mkdir -p dist && zip -FSr dist/home_assignment.zip $(PYTHON_FILES) $(PROJECT_FILES)
-
-.PHONY: zip
-zip: dist/home_assignment.zip
-
-
 # Docker comands
 app_name = ifs_webapp
 
@@ -44,3 +27,22 @@ run_docker: kill build
 .PHONY: kill
 kill:
 	@docker ps | grep $(app_name) | awk '{print $$1}' | xargs docker kill
+
+# Testing
+
+.PHONY: test
+test: .venv
+	IFS_SETTINGS=../settings.cfg .venv/bin/python -m pytest -s "tests"
+
+end_to_end_test: .venv run_docker
+	sleep 3 && .venv/bin/python end_to_end_test.py
+
+# Submission
+
+PYTHON_FILES = $(shell find ifs tests -name '*.py')
+PROJECT_FILES = README.md MANIFEST.in settings.cfg requirements.txt webapp.py Makefile
+dist/home_assignment.zip: .venv test end_to_end_test
+	mkdir -p dist && zip -FSr dist/home_assignment.zip $(PYTHON_FILES) $(PROJECT_FILES)
+
+.PHONY: zip
+zip: dist/home_assignment.zip

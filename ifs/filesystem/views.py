@@ -62,11 +62,17 @@ def delete_file(path):
 
 @fs_blueprint.route("/<path:path>", methods=["PUT"])
 def rename_file(path):
-    current_app.logger.info("This is the path received: [%s]", path)
+    current_app.logger.info("Rename: This is the path received: [%s]", path)
+    request_parameters = request.json
+    if not request_parameters:
+        return jsonify(success=False, error="Missing JSON payload")
+
     try:
-        new_path = Path(request.json.get("name", ""))
-        rename_request = RenameFileRequest(Path(path), Path(new_path))
+        new_path = Path(request_parameters.get("name", ""))
+        current_app.logger.info("Rename: This is the new file path: [%s]", new_path)
+        rename_request = RenameFileRequest(Path(path), new_path)
         current_app.fs_service.rename_file(rename_request)
         return jsonify(success=True)
     except FileSystemException as e:
+        current_app.logger.error("Error while renaming the file: %s", e)
         return jsonify(success=False, error=e.args[0])
