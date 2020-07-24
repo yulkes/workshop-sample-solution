@@ -40,7 +40,7 @@ end_to_end_test: .venv run_docker
 # Submission
 
 PYTHON_FILES = $(shell find ifs tests -name '*.py')
-PROJECT_FILES = README.md MANIFEST.in settings.cfg requirements.txt webapp.py Makefile
+PROJECT_FILES = README.md MANIFEST.in settings.cfg requirements.txt webapp.py Makefile end_to_end_test.py
 dist/home_assignment.zip: .venv test end_to_end_test
 	mkdir -p dist && zip -FSr dist/home_assignment.zip $(PYTHON_FILES) $(PROJECT_FILES)
 
