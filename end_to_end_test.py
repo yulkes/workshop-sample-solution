@@ -20,7 +20,7 @@ def end_to_end_test():
     assert set(start_filesystem.get("dirs")) == {"a1", "a2", "a3"}
     assert set(start_filesystem.get("files")) == {"f1", "f2", "f3"}
 
-    logging.debug("Testing File deletion")
+    logging.debug("Testing: File deletion")
     delete_response = requests.delete(SERVICE_BASE_PATH + "f1")
     assert delete_response.ok
     assert set(requests.get(SERVICE_BASE_PATH).json()["fs"]["files"]) == {"f2", "f3"}
