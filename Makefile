@@ -7,11 +7,11 @@ clean:
 .venv:
 	virtualenv --python=python3.8 .venv && .venv/bin/pip install -r requirements.txt
 
-.PHONY: clean
+.PHONY: run
 run: .venv
 	FLASK_ENV=development FLASK_APP=webapp IFS_SETTINGS=../settings.cfg .venv/bin/flask run
 
-.PHONY: clean
+.PHONY: test
 test: .venv
 	IFS_SETTINGS=../settings.cfg .venv/bin/python -m pytest -s "tests"
 
@@ -27,3 +27,20 @@ dist/home_assignment.zip: .venv test
 .PHONY: zip
 zip: dist/home_assignment.zip
 
+
+# Docker comands
+app_name = ifs_webapp
+
+.PHONY: build
+build:
+	docker build -t "$(app_name):latest" .
+
+.PHONY: run_docker
+run_docker: kill build
+	docker run -d -p 5000:5000 \
+	-e "FLASK_APP=webapp" -e "FLASK_ENV=development" -e "IFS_SETTINGS=../settings.cfg" \
+		--rm --name $(app_name) $(app_name)
+
+.PHONY: kill
+kill:
+	@docker ps | grep $(app_name) | awk '{print $$1}' | xargs docker kill
