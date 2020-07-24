@@ -44,5 +44,6 @@ PROJECT_FILES = README.md MANIFEST.in settings.cfg requirements.txt webapp.py Ma
 dist/home_assignment.zip: .venv test end_to_end_test
 	mkdir -p dist && zip -FSr dist/home_assignment.zip $(PYTHON_FILES) $(PROJECT_FILES)
 
+# alias for submission
 .PHONY: zip
 zip: dist/home_assignment.zip
