@@ -5,8 +5,12 @@ import time
 
 import pytest
 
-from filesystem.fs import RealFileSystemService, FileSystemException
-from filesystem.models import DeleteFileRequest, RenameFileRequest, DirListingRequest
+from ifs.filesystem.fs import RealFileSystemService, FileSystemException
+from ifs.filesystem.models import (
+    DeleteFileRequest,
+    RenameFileRequest,
+    DirListingRequest,
+)
 
 
 @pytest.fixture()
