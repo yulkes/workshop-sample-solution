@@ -1,59 +1,74 @@
-# Workshop IFS
+# Workshop IFS Sample Solution
 
-Workshop IFS description
+This is my sample solution for [Hacking the Home Assignment](https://github.com/yulkes/PublicSpeaking/tree/master/HackingTheHomeAssignment) 
+example home assignment.
+
+It follows the guidelines listed during the workshop and in my book.
+
+## Introduction
+
+This is IFS, an Insecure Filesystem operated over a REST API.
+
+It supports the following endpoints:
+* `GET /fs/<path>` : Return a JSON response structured as:
+        ```
+        {"success": true, 
+         "fs": {"filename": "<path from request>", 
+                "dirs": ["dir1", ...], 
+                "files": ["a", ...]}}
+        ```
+* `DELETE /fs/<path>` : Delete the file or directory at `<path>`.
+* `PUT /fs/<path>` with body `{name: "<new path>"}` : Move the file at `<path>` to `<new path>`. 
+
+The service will prevent accessing files and directories outside the root scope it's defined on in `BASE_PATH` configuration variable.
 
 ## Quick Start
 
-Run the application:
+Run the application in Docker:
 
+    make run_docker
+
+You can also run it locally:
+    
     make run
 
-And open it in the browser at [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
+And open it in the browser at [http://127.0.0.1:5000/fs](http://127.0.0.1:5000/fs) (Per the assignment's specs)
 
+### Other commands:
+`make test` - Will run all unit and integration tests
+
+`make end_to_end_test` - Start a Docker container with an example directory structure and run E2E tests tha delete and move files. 
+
+`make zip` - Generate a Zip file with only the relevant files, ready for submission and review.
 
 ## Prerequisites
 
-This is built to be used with Python 3. Update `Makefile` to switch to Python 2 if needed.
+This is built to be used with Python 3.8, and uses a Virtual Environment for installing dependencies.
 
-Some Flask dependencies are compiled during installation, so `gcc` and Python header files need to be present.
-For example, on Ubuntu:
+The E2E tests require Docker to be installed.
 
-    apt install build-essential python3-dev
+## Components
+
+The web-app is Flask app, with one Blueprint for the filesystem access.
+
+The Filesystem Blueprint is in `ifs/filesystem`, and contains the following files:
+* `models.py`: Domain object for the requests and responses of the filesystem service
+* `fs.py`: An interface `AbstractFileSystemService` and implementation for clean filesystem access.
+* `views.py`:` Flask routes that adapt between incoming parameters and the models for the Filesystem service's API.
 
 
 ## Development environment and release process
 
- - create virtualenv with Flask and Workshop IFS installed into it (latter is installed in
-   [develop mode](http://setuptools.readthedocs.io/en/latest/setuptools.html#development-mode) which allows
-   modifying source code directly without a need to re-install the app): `make venv`
+ - create virtualenv with Flask and development dependencies: `make .venv`
 
  - run development server in debug mode: `make run`; Flask will restart if source code is modified
 
- - run tests: `make test` (see also: [Testing Flask Applications](http://flask.pocoo.org/docs/0.12/testing/))
+ - run tests: `make test`
 
- - create source distribution: `make sdist` (will run tests first)
+ - create source submission: `make zip` (will run tests first, and will only include required files)
 
  - to remove virtualenv and built distributions: `make clean`
 
- - to add more python dependencies: add to `install_requires` in `setup.py`
+ - to add more python dependencies: add to `requirements.txt`
 
- - to modify configuration in development environment: edit file `settings.cfg`; this is a local configuration file
-   and it is *ignored* by Git - make sure to put a proper configuration file to a production environment when
-   deploying
-
-
-## Deployment
-
-If you are interested in an out-of-the-box deployment automation, check out accompanying
-[`cookiecutter-flask-ansible`](https://github.com/candidtim/cookiecutter-flask-ansible).
-
-Or, check out [Deploying with Fabric](http://flask.pocoo.org/docs/0.12/patterns/fabric/#fabric-deployment) on one of the
-possible ways to automate the deployment.
-
-In either case, generally the idea is to build a package (`make sdist`), deliver it to a server (`scp ...`),
-install it (`pip install ifs.tar.gz`), ensure that configuration file exists and
-`IFS_SETTINGS` environment variable points to it, ensure that user has access to the
-working directory to create and write log files in it, and finally run a
-[WSGI container](http://flask.pocoo.org/docs/0.12/deploying/wsgi-standalone/) with the application.
-And, most likely, it will also run behind a
-[reverse proxy](http://flask.pocoo.org/docs/0.12/deploying/wsgi-standalone/#proxy-setups).
+ - to modify configuration in development environment: edit file `settings.cfg`

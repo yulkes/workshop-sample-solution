@@ -1,4 +1,4 @@
-all: run
+all: run_docker
 
 .PHONY: clean
 clean:
