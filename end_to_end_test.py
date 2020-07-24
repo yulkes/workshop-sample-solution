@@ -33,9 +33,7 @@ def end_to_end_test():
     assert set(requests.get(SERVICE_BASE_PATH).json()["fs"]["files"]) == {"f3"}
     assert "new_name" in requests.get(SERVICE_BASE_PATH + "a1").json()["fs"]["files"]
 
-    # Get dir list, see changes are persisted
-    logging.debug("Testing file deletion")
-
+    # Success!
     logging.info("Everything finished successfully")
 
 
